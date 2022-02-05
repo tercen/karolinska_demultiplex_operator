@@ -1,11 +1,22 @@
 library(tercen)
 library(dplyr, warn.conflicts = FALSE)
+library(base64enc)
+library(stringr)
 
 options("tercen.workflowId" = "b09f25d899d082c8e044aa0e7204d7d5")
 options("tercen.stepId"     = "de830731-4bd3-404b-baee-c3cad331b2d2")
 
 getOption("tercen.workflowId")
 getOption("tercen.stepId")
+
+
+serialize.to.string = function(object){
+  con = rawConnection(raw(0), "r+")
+  saveRDS(object, con)
+  str64 = base64enc::base64encode(rawConnectionValue(con))
+  close(con)
+  return(str64)
+}
 
 ctx = tercenCtx()
 
@@ -28,7 +39,7 @@ writeBin(ctx$client$fileService$download(documentIds[[1]]), filename)
 
 system(paste0("unzip ", filename))
 
-py_install("Levenshtein")
+system("python3 -m pip install Levenshtein")
 
 r1_file <- list.files(".", "_R1_", recursive = TRUE,
                       full.names = TRUE)
@@ -47,9 +58,39 @@ system(paste("python3 demultiplex_TCR_fastqs_by_row_and_column_barcodes.py",
              r1_file, r2_file, "demultiplexed_files/ --gzip_output yes --row_barcodes_file",
              row_file, "--col_barcodes_file", col_file))
 
-ctx %>%
-  select(.y, .ci, .ri) %>%
-  group_by(.ci, .ri) %>%
-  summarise(mean = mean(.y)) %>%
+output_r1_files <- list.files("demultiplexed_files",
+                              "_R1.fastq",
+                              full.names = TRUE)
+
+output_table <- c()
+
+for (sample_R1 in output_r1_files) {
+  
+  
+  bytes_R1 <- readBin(file(sample_R1, 'rb'),
+                      raw(),
+                      n=file.info(sample_R1)$size)
+  
+  sample_R2 <- str_replace(sample_R1, "_R1.fastq", "_R2.fastq")
+  
+  bytes_R2 <- readBin(file(sample_R2, 'rb'),
+                      raw(),
+                      n=file.info(sample_R2)$size)
+  
+  string_val1 <- serialize.to.string(bytes_R1)
+  string_val2 <- serialize.to.string(bytes_R2)
+  
+  sample_name <- str_split(basename(sample_R1),
+                           "_R1.fastq")[[1]][[1]]
+  
+  output_table <- bind_rows(output_table,
+                            tibble(sample = sample_name,
+                                   .forward_read_fastq_data = string_val1,
+                                   .reverse_read_fastq_data = string_val2))
+  
+}
+
+output_table %>%
+  mutate(.ci = 0) %>%
   ctx$addNamespace() %>%
   ctx$save()
