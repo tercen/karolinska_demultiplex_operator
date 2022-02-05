@@ -76,8 +76,16 @@ for (sample_R1 in output_r1_files) {
   sample_name <- str_split(basename(sample_R1),
                            "_R1.fastq")[[1]][[1]]
   
+  number_of_lines <- as.integer(system(paste("zcat",
+                                               sample_R1,
+                                               "| wc -l | awk '{print $1}'"),
+                                      intern = TRUE))
+  
+  number_of_reads <- number_of_lines / 4
+  
   output_table <- bind_rows(output_table,
                             tibble(sample = sample_name,
+                                   read_number = number_of_reads,
                                    .forward_read_fastq_data = string_val1,
                                    .reverse_read_fastq_data = string_val2))
   
