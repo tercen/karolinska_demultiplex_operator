@@ -10,7 +10,7 @@ input_path <- "/var/lib/tercen/share/read/files_to_demultiplex"
 # Check if a "files_to_demultiplex" folder exists and is not empty
 if( dir.exists(input_path) == FALSE) {
 
-  stop("ERROR: files_to_demultiplex folder does not exist in project write folder.")
+  stop("ERROR: files_to_demultiplex folder does not exist in project read folder.")
 
 }
 
