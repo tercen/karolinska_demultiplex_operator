@@ -34,17 +34,17 @@ if (length(r1_file) == 0) stop("ERROR: could not find a forward read file.")
 r2_file <- list.files(input_path, "_R2_", recursive = TRUE,
                       full.names = TRUE)
 
-if (length(r2_file) == 0) stop("ERROR: could not find a reverse read file."
+if (length(r2_file) == 0) stop("ERROR: could not find a reverse read file.")
 
 col_file <- list.files(input_path, "col.txt", recursive = TRUE,
                        full.names = TRUE)
 
-if (length(col_file) == 0) stop("ERROR: could not find a col.txt file."
+if (length(col_file) == 0) stop("ERROR: could not find a col.txt file.")
 
 row_file <- list.files(input_path, "row.txt", recursive = TRUE,
                        full.names = TRUE)
 
-if (length(row_file) == 0) stop("ERROR: could not find a row.txt file."
+if (length(row_file) == 0) stop("ERROR: could not find a row.txt file.")
 
 
 print(paste0("python3 demultiplex_TCR_fastqs_by_row_and_column_barcodes.py ",
