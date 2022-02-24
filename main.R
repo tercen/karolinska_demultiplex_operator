@@ -23,9 +23,14 @@ col_file <- list.files(input_path, "col.txt", recursive = TRUE,
 row_file <- list.files(input_path, "row.txt", recursive = TRUE,
                        full.names = TRUE)
 
+
+print(paste0("python3 demultiplex_TCR_fastqs_by_row_and_column_barcodes.py ",
+              r1_file, " ", r2_file, " ", output_path, " --gzip_output yes --row_barcodes_file ",
+              row_file, " --col_barcodes_file ", col_file))
+
 system(paste0("python3 demultiplex_TCR_fastqs_by_row_and_column_barcodes.py ",
-              r1_file, " ", r2_file, " ", output_path, " --gzip_output yes --row_barcodes_file",
-              row_file, "--col_barcodes_file", col_file))
+              r1_file, " ", r2_file, " ", output_path, " --gzip_output yes --row_barcodes_file ",
+              row_file, " --col_barcodes_file ", col_file))
 
 output_r1_files <- list.files(output_path,
                               "_R1.fastq",
