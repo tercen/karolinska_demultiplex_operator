@@ -9,7 +9,7 @@ input_path <- "/var/lib/tercen/share/read/files_to_demultiplex"
 
 output_path <- "/var/lib/tercen/share/write/demultiplexed_fastqs/"
 
-system(paste("mkdir", output_path)
+system(paste("mkdir", output_path))
 
 r1_file <- list.files(input_path, "_R1_", recursive = TRUE,
                       full.names = TRUE)
