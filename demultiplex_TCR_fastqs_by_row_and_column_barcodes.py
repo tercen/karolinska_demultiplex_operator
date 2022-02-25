@@ -472,6 +472,29 @@ def step1(fastq_R1_in, fastq_R2_in, fastq_R1_out, fastq_R2_out, fastq_rowBC_out,
                 remove(path)
         raise
 
+def reorder_name(path):
+    #This is an example of the current name structure, coming from well H2:
+    #dem_P20505_3001_S1_L001_PlateNN2H_BC2_R1.fastq.gz
+    #Ideal naming:
+    #dem_P20505_3001_S1_PlateNN2H_BC2_H2_L001_R1.fastq.gz
+    
+    up_to_slash, filename = ('', path) if '/' not in path else (path.rsplit('/',1)[0]+'/', path.rsplit('/',1)[1])
+    name_parts = filename.split('_')
+    lane_i = None
+    plate_i = None
+    for pi, part in enumerate(name_parts):
+        if part.startswith('L00'): lane_i = pi
+        elif part.startswith('PlateNN'): plate_i = pi
+    if lane_i is None:
+        for pi, part in enumerate(name_parts):
+            if part.startswith('L0'): lane_i = pi
+    newname = '_'.join(part for pi, part in enumerate(name_parts[:-1]) if pi != lane_i)
+    if plate_i is not None:
+        newname += '_' + name_parts[plate_i][-1:] + name_parts[plate_i][7:-1]
+    if lane_i is not None:
+        newname += '_' + name_parts[lane_i]
+    newname += '_'+name_parts[-1]
+    return up_to_slash+newname
 
 def open_check(path, mode):
     if os.path.exists(path) and 'w' in mode: raise Exception('Delete %s and try again'%path)
@@ -499,7 +522,7 @@ def step2(fastq_R1_in, fastq_R2_in, fastq_rowBC_in, fastq_colBC_in, fastq_prefix
         barcode_combinations_left = barcode_combinations_left[concurrent//2:]
         
         # create empty fastq files for them
-        open_files = {(rowBC, colBC):(open_func2(fastq_prefix_out + name + R1filesuffix, 'wt'), open_func2(fastq_prefix_out + name + R2filesuffix, 'wt')) for name, rowBC, colBC in barcode_combinations}
+        open_files = {(rowBC, colBC):(open_func2(reorder_name(fastq_prefix_out + name + R1filesuffix), 'wt'), open_func2(reorder_name(fastq_prefix_out + name + R2filesuffix), 'wt')) for name, rowBC, colBC in barcode_combinations}
         
         with open_func1(fastq_R1_in, 'rt') as infhR1:
             with open_func1(fastq_R2_in, 'rt') as infhR2:
