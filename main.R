@@ -20,7 +20,11 @@ if (length(dir(input_path)) == 0) {
 
 # Define and create output paths
 
-output_path <- "/var/lib/tercen/share/write/demultiplexed_fastqs/"
+output_folder <- paste0(format(Sys.time(), "%Y_%m_%d_%X"),
+                        "_demultiplexed_fastqs")
+
+output_path <- paste0("/var/lib/tercen/share/write/",
+                      output_folder, "/")
 
 system(paste("mkdir", output_path))
 
@@ -80,6 +84,7 @@ for (sample_R1 in output_r1_files) {
 }
 
 output_table %>%
-  mutate(.ci = 0) %>%
+  mutate(.ci = 0,
+         output_folder = output_folder) %>%
   ctx$addNamespace() %>%
   ctx$save()
